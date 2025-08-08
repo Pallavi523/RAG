@@ -4,7 +4,7 @@ import os
 from typing import List, Dict, Any, Optional
 
 from langchain_community.vectorstores import FAISS
-from langchain_openai.embeddings import OpenAIEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain.schema import Document
 
 from config.settings import settings
@@ -15,10 +15,11 @@ class VectorStoreService:
     
     def __init__(self):
         """Initialize the vector store service."""
-        self.embeddings = OpenAIEmbeddings(
-            openai_api_key=settings.OPENAI_API_KEY
+        self.embeddings = GoogleGenerativeAIEmbeddings(
+            model="models/embedding-001",  # Gemini embedding model
+            google_api_key=settings.GOOGLE_API_KEY
         )
-    
+
     async def create_vector_store(self, documents: List[Dict[str, Any]]) -> FAISS:
         """
         Create a vector store from document chunks.

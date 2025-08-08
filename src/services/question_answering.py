@@ -1,9 +1,9 @@
-"""Question answering service using LangChain and LLMs."""
+"""Question answering service using LangChain and Gemini LLM."""
 
 from typing import List, Dict, Any, Optional
 
 from langchain import hub
-from langchain_openai.chat_models import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.vectorstores import FAISS
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
@@ -19,11 +19,14 @@ class QuestionAnsweringService:
 
     def __init__(self):
         """Initialize the question answering service."""
-        self.llm = ChatOpenAI(
-            model_name="gpt-4",
-            temperature=0.2,  
-            max_tokens=100,  
-            openai_api_key=settings.OPENAI_API_KEY,
+        self.llm = ChatGoogleGenerativeAI(
+            model="gemini-1.5-flash",  # Using Flash for higher rate limits
+            temperature=0.2,
+            max_tokens=100,
+            google_api_key=settings.GOOGLE_API_KEY,
+            # Add retry and timeout settings for better rate limit handling
+            max_retries=3,
+            request_timeout=60,
         )
 
     async def answer_question(

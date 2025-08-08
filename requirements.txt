@@ -10,3 +10,4 @@ faiss-cpu
 pydantic-settings
 langchain-community
 pypdf
+langchain-google-genai
