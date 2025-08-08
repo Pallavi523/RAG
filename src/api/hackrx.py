@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from schema.hackrx import HackRxRunRequest, HackRxRunResponse
+from services.dependencies import get_document_processor, get_vector_store_service, get_qa_service
 from services.document_processor import DocumentProcessor
 from services.vector_store import VectorStoreService
 from services.question_answering import QuestionAnsweringService
@@ -8,15 +9,18 @@ router = APIRouter(
     tags=["hackrx"],
 
 )
-@router.post("/run",response_model=HackRxRunResponse)
-async def question_answering(request: HackRxRunRequest):
+@router.post("/run", response_model=HackRxRunResponse)
+async def question_answering(
+    request: HackRxRunRequest,
+    document_processor: DocumentProcessor = Depends(get_document_processor),
+    vector_store_service: VectorStoreService = Depends(get_vector_store_service),
+    qa_service: QuestionAnsweringService = Depends(get_qa_service)
+):
     """
     Run a HackRx task with the provided documents and questions.
+    Uses pre-initialized service instances for better performance.
     """
     try:
-        document_processor = DocumentProcessor() 
-        vector_store_service = VectorStoreService()
-        qa_service = QuestionAnsweringService()
         documents = []
         
         # Handle both single URL and list of URLs

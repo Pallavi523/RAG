@@ -3,8 +3,8 @@
 import os
 from typing import List, Dict, Any, Optional
 
-from langchain.vectorstores import FAISS
-from langchain.embeddings import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_openai.embeddings import OpenAIEmbeddings
 from langchain.schema import Document
 
 from config.settings import settings

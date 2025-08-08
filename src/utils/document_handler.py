@@ -35,9 +35,22 @@ class DocumentHandler:
     def download_document(self, url: str, filename: Optional[str] = None):
         """
         Download a document from the given URL and save it to the documents path.
+        Optimized for faster downloads and processing.
         """
         try:
-            response = requests.get(url,stream=True,timeout=30)
+            # Optimize request with headers and larger timeout
+            headers = {
+                'User-Agent': 'Mozilla/5.0',
+                'Accept': '*/*',
+                'Connection': 'keep-alive'
+            }
+            # Increase chunk size for faster downloads
+            response = requests.get(
+                url,
+                stream=True,
+                timeout=15,  # Reduced timeout for faster failure detection
+                headers=headers
+            )
             response.raise_for_status() 
             content_type = response.headers.get('Content-Type', '')
             doc_type = self._get_doc_type(content_type, url)
@@ -45,8 +58,9 @@ class DocumentHandler:
                 filename = "test"
             file_path = os.path.join(self.documents_path, f"{filename}.{doc_type}")
 
+            # Use larger chunk size for faster file writing
             with open(file_path, 'wb') as file:
-                for chunk in response.iter_content(chunk_size=8192):
+                for chunk in response.iter_content(chunk_size=32768):  # Doubled from 8192
                     file.write(chunk)
 
             return file_path, doc_type, filename

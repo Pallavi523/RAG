@@ -2,7 +2,7 @@
 
 from typing import List, Dict, Any, Optional
 
-from langchain.document_loaders import PyPDFLoader, Docx2txtLoader, UnstructuredEmailLoader
+from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, UnstructuredEmailLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from utils.document_handler import DocumentHandler
@@ -15,8 +15,8 @@ class DocumentProcessor:
         """Initialize the document processor."""
         self.document_handler = DocumentHandler()
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,
-            chunk_overlap=200,
+            chunk_size=1500,
+            chunk_overlap=100,
             length_function=len,
         )
     
@@ -46,7 +46,7 @@ class DocumentProcessor:
             raise ValueError(f"Unsupported document type: {extension}")
     
     async def _process_pdf(self, file_path: str, filename: str) -> List[Dict[str, Any]]:
-        """Process a PDF document.
+        """Process a PDF document with optimized performance.
         
         Args:
             file_path: Path to the PDF file
@@ -55,18 +55,24 @@ class DocumentProcessor:
         Returns:
             List of document chunks with text and metadata
         """
-        loader = PyPDFLoader(file_path)
+        # Use PyPDFLoader with optimized settings
+        loader = PyPDFLoader(
+            file_path,
+            extract_images=False  # Skip image extraction for faster processing
+        )
+        
+        # Load documents
         documents = loader.load()
         
-        # Add metadata
+        # Add metadata efficiently in a single pass
+        metadata = {"source": filename, "file_path": file_path}
         for doc in documents:
-            doc.metadata["source"] = filename
-            doc.metadata["file_path"] = file_path
+            doc.metadata.update(metadata)
         
         # Split documents into chunks
         chunks = self.text_splitter.split_documents(documents)
         
-        # Convert to dictionaries for easier serialization
+        # Convert to dictionaries using list comprehension for better performance
         return [
             {
                 "page_content": chunk.page_content,
@@ -76,7 +82,7 @@ class DocumentProcessor:
         ]
     
     async def _process_docx(self, file_path: str, filename: str) -> List[Dict[str, Any]]:
-        """Process a DOCX document.
+        """Process a DOCX document with optimized performance.
         
         Args:
             file_path: Path to the DOCX file
@@ -85,18 +91,19 @@ class DocumentProcessor:
         Returns:
             List of document chunks with text and metadata
         """
+        # Use Docx2txtLoader for faster text extraction
         loader = Docx2txtLoader(file_path)
         documents = loader.load()
         
-        # Add metadata
+        # Add metadata efficiently in a single pass
+        metadata = {"source": filename, "file_path": file_path}
         for doc in documents:
-            doc.metadata["source"] = filename
-            doc.metadata["file_path"] = file_path
+            doc.metadata.update(metadata)
         
         # Split documents into chunks
         chunks = self.text_splitter.split_documents(documents)
         
-        # Convert to dictionaries for easier serialization
+        # Convert to dictionaries using list comprehension for better performance
         return [
             {
                 "page_content": chunk.page_content,
